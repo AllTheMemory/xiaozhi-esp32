@@ -3,7 +3,6 @@
 #include "display.h"
 #include "system_info.h"
 #include "audio_codec.h"
-#include "mqtt_protocol.h"
 #include "websocket_protocol.h"
 #include "font_awesome_symbols.h"
 #include "assets/lang_config.h"
@@ -359,7 +358,7 @@ void Application::Start() {
     // Update the status bar immediately to show the network state
     display->UpdateStatusBar(true);
 
-    // Check for new firmware version or get the MQTT broker address
+    // Check for new firmware version and configuration
     Ota ota;
     CheckNewVersion(ota);
 
@@ -369,13 +368,9 @@ void Application::Start() {
     // Add MCP common tools before initializing the protocol
     McpServer::GetInstance().AddCommonTools();
 
-    if (ota.HasMqttConfig()) {
-        protocol_ = std::make_unique<MqttProtocol>();
-    } else if (ota.HasWebsocketConfig()) {
-        protocol_ = std::make_unique<WebsocketProtocol>();
-    } else {
-        ESP_LOGW(TAG, "No protocol specified in the OTA config, using MQTT");
-        protocol_ = std::make_unique<MqttProtocol>();
+    protocol_ = std::make_unique<WebsocketProtocol>();
+    if (!ota.HasWebsocketConfig()) {
+        ESP_LOGW(TAG, "No WebSocket config in the OTA response, using existing settings");
     }
 
     protocol_->OnNetworkError([this](const std::string& message) {
