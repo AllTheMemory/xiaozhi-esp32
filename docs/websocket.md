@@ -398,7 +398,7 @@ stateDiagram
 
 5. **物联网控制推荐 MCP 协议**  
    - 设备与服务器之间的物联网能力发现、状态同步、控制指令等，建议全部通过 MCP 协议（type: "mcp"）实现。原有的 type: "iot" 方案已废弃。
-   - MCP 协议可在 WebSocket、MQTT 等多种底层协议上传输，具备更好的扩展性和标准化能力。
+   - MCP 协议可在 WebSocket 等多种底层协议上传输，具备更好的扩展性和标准化能力。
    - 详细用法请参考 [MCP 协议文档](./mcp-protocol.md) 及 [MCP 物联网控制用法](./mcp-usage.md)。
 
 6. **错误或异常 JSON**  

@@ -26,7 +26,7 @@
 
 - Wi-Fi / ML307 Cat.1 4G
 - オフライン音声ウェイクアップ [ESP-SR](https://github.com/espressif/esp-sr)
-- 2種類の通信プロトコルに対応（[Websocket](docs/websocket.md) または MQTT+UDP）
+- WebSocket 通信プロトコルのみをサポート
 - OPUSオーディオコーデックを採用
 - ストリーミングASR + LLM + TTSアーキテクチャに基づく音声インタラクション
 - 話者認識、現在話している人を識別 [3D Speaker](https://github.com/modelscope/3D-Speaker)

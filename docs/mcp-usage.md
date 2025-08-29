@@ -8,7 +8,7 @@ MCP（Model Context Protocol）是新一代推荐用于物联网控制的协议�
 
 ## 典型使用流程
 
-1. 设备启动后通过基础协议（如 WebSocket/MQTT）与后台建立连接。
+1. 设备启动后通过 WebSocket 与后台建立连接。
 2. 后台通过 MCP 协议的 `initialize` 方法初始化会话。
 3. 后台通过 `tools/list` 获取设备支持的所有工具（功能）及参数说明。
 4. 后台通过 `tools/call` 调用具体工具，实现对设备的控制。

@@ -26,7 +26,7 @@ As a voice interaction entry, the XiaoZhi AI chatbot leverages the AI capabiliti
 
 - Wi-Fi / ML307 Cat.1 4G
 - Offline voice wake-up [ESP-SR](https://github.com/espressif/esp-sr)
-- Supports two communication protocols ([Websocket](docs/websocket.md) or MQTT+UDP)
+- Supports only the WebSocket communication protocol
 - Uses OPUS audio codec
 - Voice interaction based on streaming ASR + LLM + TTS architecture
 - Speaker recognition, identifies the current speaker [3D Speaker](https://github.com/modelscope/3D-Speaker)
