@@ -135,7 +135,7 @@ MCP 的交互主要围绕客户端（后台 API）发现和调用设备上的“
               "inputSchema": { ... } // 参数 schema
             },
             {
-              "name": "self.audio_speaker.set_volume",
+              "name": "self.audio.set_volume",
               "description": "...",
               "inputSchema": { ... } // 参数 schema
             }
@@ -158,7 +158,7 @@ MCP 的交互主要围绕客户端（后台 API）发现和调用设备上的“
         "jsonrpc": "2.0",
         "method": "tools/call",
         "params": {
-          "name": "self.audio_speaker.set_volume", // 要调用的工具名称
+          "name": "self.audio.set_volume", // 要调用的工具名称
           "arguments": {
             // 工具参数，对象格式
             "volume": 50 // 参数名及其值
