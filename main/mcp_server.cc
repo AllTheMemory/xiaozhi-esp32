@@ -34,6 +34,7 @@ void McpServer::AddCommonTools() {
     // Backup the original tools list and restore it after adding the common tools.
     auto original_tools = std::move(tools_);
     auto& board = Board::GetInstance();
+    auto& app = Application::GetInstance();
 
     AddTool("self.get_device_status",
         "Provides the real-time information of the device, including the current status of the audio speaker, screen, battery, network, etc.\n"
@@ -45,14 +46,92 @@ void McpServer::AddCommonTools() {
             return board.GetDeviceStatusJson();
         });
 
-    AddTool("self.audio_speaker.set_volume", 
-        "Set the volume of the audio speaker. If the current volume is unknown, you must call `self.get_device_status` tool first and then call this tool.",
+    AddTool("self.audio.set_volume",
+        "Set speaker volume (0-100)",
         PropertyList({
-            Property("volume", kPropertyTypeInteger, 0, 100)
-        }), 
+            Property("value", kPropertyTypeInteger, 0, 100)
+        }),
         [&board](const PropertyList& properties) -> ReturnValue {
             auto codec = board.GetAudioCodec();
-            codec->SetOutputVolume(properties["volume"].value<int>());
+            codec->SetOutputVolume(properties["value"].value<int>());
+            return true;
+        });
+
+    AddTool("self.audio.get_volume",
+        "Get current speaker volume",
+        PropertyList(),
+        [&board](const PropertyList& properties) -> ReturnValue {
+            auto codec = board.GetAudioCodec();
+            return codec->output_volume();
+        });
+
+    AddTool("self.audio.mute",
+        "Mute/unmute microphone",
+        PropertyList({
+            Property("enabled", kPropertyTypeBoolean)
+        }),
+        [&board](const PropertyList& properties) -> ReturnValue {
+            bool mute = properties["enabled"].value<bool>();
+            auto codec = board.GetAudioCodec();
+            codec->EnableInput(!mute);
+            return true;
+        });
+
+    AddTool("self.tts.say",
+        "Prepare device for TTS playback (control signal)",
+        PropertyList({
+            Property("text", kPropertyTypeString),
+            Property("voice", kPropertyTypeString, std::string("")),
+            Property("speed", kPropertyTypeInteger, 100, 50, 200)
+        }),
+        [&app](const PropertyList& properties) -> ReturnValue {
+            auto text = properties["text"].value<std::string>();
+            auto voice = properties["voice"].value<std::string>();
+            int speed_value = properties["speed"].value<int>();
+            (void)voice;
+            (void)speed_value;
+            app.Schedule([text]() {
+                auto display = Board::GetInstance().GetDisplay();
+                if (display) {
+                    display->SetChatMessage("assistant", text.c_str());
+                }
+            });
+            return true;
+        });
+
+    AddTool("self.tts.stop",
+        "Stop current TTS playback",
+        PropertyList(),
+        [&app](const PropertyList& properties) -> ReturnValue {
+            app.Schedule([]() {
+                Application::GetInstance().AbortSpeaking(kAbortReasonNone);
+            });
+            return true;
+        });
+
+    AddTool("self.session.listen_start",
+        "Start microphone capture",
+        PropertyList(),
+        [&app](const PropertyList& properties) -> ReturnValue {
+            app.StartListening();
+            return true;
+        });
+
+    AddTool("self.session.listen_stop",
+        "Stop microphone capture",
+        PropertyList(),
+        [&app](const PropertyList& properties) -> ReturnValue {
+            app.StopListening();
+            return true;
+        });
+
+    AddTool("self.system.shutdown",
+        "Safe device shutdown",
+        PropertyList({
+            Property("reason", kPropertyTypeString, std::string(""))
+        }),
+        [&app](const PropertyList& properties) -> ReturnValue {
+            app.Schedule([]() { Application::GetInstance().Reboot(); });
             return true;
         });
     
