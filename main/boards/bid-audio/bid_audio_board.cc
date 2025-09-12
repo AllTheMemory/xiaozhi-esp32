@@ -1,7 +1,7 @@
 #include "application.h"
 #include "assets/lang_config.h"
 #include "button.h"
-#include "codecs/es8311_audio_codec.h"
+#include "codecs/no_audio_codec.h"
 #include "config.h"
 #include "display/display.h"
 #include "led/single_led.h"
@@ -15,34 +15,9 @@
 
 class BidAudioBoard : public WifiBoard {
 private:
-  i2c_master_bus_handle_t codec_i2c_bus_;
   Button boot_button_;
   Button volume_up_button_;
   Button volume_down_button_;
-
-  void InitializeCodecI2c() {
-    i2c_master_bus_config_t i2c_bus_cfg = {
-        .i2c_port = I2C_NUM_0,
-        .sda_io_num = AUDIO_CODEC_I2C_SDA_PIN,
-        .scl_io_num = AUDIO_CODEC_I2C_SCL_PIN,
-        .clk_source = I2C_CLK_SRC_DEFAULT,
-        .glitch_ignore_cnt = 7,
-        .intr_priority = 0,
-        .trans_queue_depth = 0,
-        .flags =
-            {
-                .enable_internal_pullup = 1,
-            },
-    };
-    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_bus_cfg, &codec_i2c_bus_));
-    if (i2c_master_probe(codec_i2c_bus_, AUDIO_CODEC_ES8311_ADDR, 1000) !=
-        ESP_OK) {
-      while (true) {
-        ESP_LOGE(TAG, "Failed to probe ES8311, check wiring");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-      }
-    }
-  }
 
   void InitializeButtons() {
     boot_button_.OnClick([this]() {
@@ -92,7 +67,6 @@ public:
       : boot_button_(BOOT_BUTTON_GPIO),
         volume_up_button_(VOLUME_UP_BUTTON_GPIO),
         volume_down_button_(VOLUME_DOWN_BUTTON_GPIO) {
-    InitializeCodecI2c();
     InitializeButtons();
   }
 
@@ -101,14 +75,11 @@ public:
     return &led;
   }
 
-  virtual AudioCodec *GetAudioCodec() override {
-    static Es8311AudioCodec audio_codec(
-        codec_i2c_bus_, I2C_NUM_0, AUDIO_INPUT_SAMPLE_RATE,
-        AUDIO_OUTPUT_SAMPLE_RATE, AUDIO_I2S_GPIO_MCLK, AUDIO_I2S_GPIO_BCLK,
-        AUDIO_I2S_GPIO_WS, AUDIO_I2S_GPIO_DOUT, AUDIO_I2S_GPIO_DIN,
-        AUDIO_CODEC_PA_PIN, AUDIO_CODEC_ES8311_ADDR);
-    return &audio_codec;
-  }
+  virtual AudioCodec* GetAudioCodec() override {
+        static NoAudioCodecSimplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
+            AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_SCK, AUDIO_I2S_MIC_GPIO_WS, AUDIO_I2S_MIC_GPIO_DIN);
+        return &audio_codec;
+    }
 };
 
 DECLARE_BOARD(BidAudioBoard);
