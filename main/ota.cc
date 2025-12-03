@@ -10,6 +10,7 @@
 #include <esp_app_format.h>
 #include <esp_efuse.h>
 #include <esp_efuse_table.h>
+#include "esp_pm.h"
 #ifdef SOC_HMAC_SUPPORTED
 #include <esp_hmac.h>
 #endif
@@ -241,6 +242,12 @@ void Ota::MarkCurrentVersionValid() {
 
 bool Ota::Upgrade(const std::string& firmware_url) {
     ESP_LOGI(TAG, "Upgrading firmware from %s", firmware_url.c_str());
+    esp_pm_config_t pm_config = {
+        .max_freq_mhz = 80,  // Reduce from 240MHz to 80MHz
+        .min_freq_mhz = 80,
+        .light_sleep_enable = false
+    };
+    esp_pm_configure(&pm_config);
     esp_ota_handle_t update_handle = 0;
     auto update_partition = esp_ota_get_next_update_partition(NULL);
     if (update_partition == NULL) {
