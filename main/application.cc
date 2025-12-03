@@ -131,11 +131,18 @@ void Application::CheckNewVersion(Ota& ota) {
                 board.SetPowerSaveMode(true); // Restore power save mode
                 Alert(Lang::Strings::ERROR, Lang::Strings::UPGRADE_FAILED, "sad", Lang::Sounds::OGG_EXCLAMATION);
                 vTaskDelay(pdMS_TO_TICKS(3000));
+                ota.RecordUpgradeFailure();
+                if (ota.IsUpgradePaused()) {
+                    display->SetChatMessage("system", "OTA paused after 5 failures. Call restart_ota to retry.");
+                    xEventGroupSetBits(event_group_, MAIN_EVENT_CHECK_NEW_VERSION_DONE);
+                    break;
+                }
                 // Continue to normal operation (don't break, just fall through)
             } else {
                 // Upgrade success, reboot immediately
                 ESP_LOGI(TAG, "Firmware upgrade successful, rebooting...");
                 display->SetChatMessage("system", "Upgrade successful, rebooting...");
+                ota.ResetUpgradeFailures();
                 vTaskDelay(pdMS_TO_TICKS(1000)); // Brief pause to show message
                 Reboot();
                 return; // This line will never be reached after reboot

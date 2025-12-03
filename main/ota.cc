@@ -36,9 +36,37 @@ Ota::Ota() {
         }
     }
 #endif
+
+    Settings ota_settings("ota", false);
+    ota_failure_count_ = ota_settings.GetInt("failure_count", 0);
+    ota_paused_ = ota_settings.GetBool("paused", false);
 }
 
 Ota::~Ota() {
+}
+
+void Ota::RecordUpgradeFailure() {
+    if (ota_paused_) {
+        return;
+    }
+
+    ota_failure_count_++;
+    Settings settings("ota", true);
+    settings.SetInt("failure_count", ota_failure_count_);
+    if (ota_failure_count_ >= kMaxOtaFailures) {
+        ota_paused_ = true;
+        settings.SetBool("paused", true);
+        ESP_LOGW(TAG, "OTA paused after %d failures", ota_failure_count_);
+    }
+}
+
+void Ota::ResetUpgradeFailures() {
+    ota_failure_count_ = 0;
+    ota_paused_ = false;
+    Settings settings("ota", true);
+    settings.SetInt("failure_count", 0);
+    settings.SetBool("paused", false);
+    ESP_LOGI(TAG, "OTA failure counter reset");
 }
 
 std::string Ota::GetCheckVersionUrl() {

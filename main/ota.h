@@ -19,8 +19,11 @@ public:
     bool HasWebsocketConfig() { return has_websocket_config_; }
     bool HasActivationCode() { return has_activation_code_; }
     bool HasServerTime() { return has_server_time_; }
+    bool IsUpgradePaused() const { return ota_paused_; }
     bool StartUpgrade(std::function<void(int progress, size_t speed)> callback);
     void MarkCurrentVersionValid();
+    void RecordUpgradeFailure();
+    void ResetUpgradeFailures();
 
     const std::string& GetFirmwareVersion() const { return firmware_version_; }
     const std::string& GetCurrentVersion() const { return current_version_; }
@@ -43,6 +46,9 @@ private:
     std::string activation_challenge_;
     std::string serial_number_;
     int activation_timeout_ms_ = 30000;
+    int ota_failure_count_ = 0;
+    bool ota_paused_ = false;
+    static constexpr int kMaxOtaFailures = 5;
 
     bool Upgrade(const std::string& firmware_url);
     std::function<void(int progress, size_t speed)> upgrade_callback_;

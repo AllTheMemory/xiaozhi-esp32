@@ -13,6 +13,7 @@
 #include "application.h"
 #include "display.h"
 #include "board.h"
+#include "ota.h"
 
 #define TAG "MCP"
 
@@ -131,6 +132,17 @@ void McpServer::AddCommonTools() {
             Property("reason", kPropertyTypeString, std::string(""))
         }),
         [&app](const PropertyList& properties) -> ReturnValue {
+            app.Schedule([]() { Application::GetInstance().Reboot(); });
+            return true;
+        });
+
+    AddTool("self.system.restart_ota",
+        "Clear OTA failure counter and restart to retry OTA flow.",
+        PropertyList(),
+        [&app](const PropertyList& properties) -> ReturnValue {
+            (void)properties;
+            Ota ota;
+            ota.ResetUpgradeFailures();
             app.Schedule([]() { Application::GetInstance().Reboot(); });
             return true;
         });
