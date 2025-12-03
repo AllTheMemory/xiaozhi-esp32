@@ -142,6 +142,7 @@ void Application::CheckNewVersion(Ota& ota) {
                 // Upgrade success, reboot immediately
                 ESP_LOGI(TAG, "Firmware upgrade successful, rebooting...");
                 display->SetChatMessage("system", "Upgrade successful, rebooting...");
+                audio_service_.PlaySound(Lang::Sounds::OGG_OTA_SUCCESS);
                 ota.ResetUpgradeFailures();
                 vTaskDelay(pdMS_TO_TICKS(1000)); // Brief pause to show message
                 Reboot();
